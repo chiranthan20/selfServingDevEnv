@@ -47,7 +47,7 @@ stages:
               - task: AzureCLI@2
                 displayName: Build Ubuntu VMSS Image
                 inputs:
-                  azureSubscription: 'Deployment-AIRadCompanionDevOps'
+                  azureSubscription: <Service_Connection_Name>
                   addSpnToEnvironment: true
                   scriptType: bash
                   scriptLocation: inlineScript

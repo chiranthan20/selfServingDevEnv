@@ -1,0 +1,74 @@
+parameters:
+  - name: 'SubscriptionName'
+    type: string
+  - name: 'DryRun'
+    type: boolean
+    default: false
+  - name: Backend
+    type: string
+  - name: barewindowsVM
+    type: boolean
+
+jobs:
+  - job: ProvisionVM_${{parameters.Backend}}
+    timeoutInMinutes: 100
+    steps:
+    - template: ../common/iac-installation-ubuntu.yml@self
+
+    - task: AzureCLI@2
+      displayName: Create Resource Group and Storage Account if not exist
+      inputs:
+        azureSubscription:  '${{parameters.SubscriptionName}}'
+        addSpnToEnvironment: true
+        scriptType: bash
+        scriptLocation: inlineScript
+        failOnStandardError: false 
+        inlineScript: |
+          sh ../../ci/vm-setup.sh vmimageRG '${{ parameters.Backend }}terraforminfra' terraformstate ${{ parameters.Backend }}
+        workingDirectory: infra/terraform
+        
+    - task: AzureCLI@2
+      displayName: Validate VM Terraform Code
+      inputs:
+        azureSubscription:  '${{parameters.SubscriptionName}}'
+        addSpnToEnvironment: true
+        scriptType: bash
+        scriptLocation: inlineScript
+        failOnStandardError: true 
+        inlineScript: |
+            sh ../../ci/validatetf.sh "${{ parameters.Backend }}.tfbackend" "vm" "./${{ parameters.Backend }}/variables.tfvars"
+        workingDirectory: infra/terraform
+        
+    - ${{ if eq(parameters.DryRun, false) }}:    
+      - task: AzureCLI@2
+        displayName: Provide Custom VM
+        inputs:
+          azureSubscription: '${{parameters.SubscriptionName}}'
+          addSpnToEnvironment: true
+          failOnStandardError: true
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            export ARM_CLIENT_ID=$servicePrincipalId
+            export ARM_CLIENT_SECRET=$servicePrincipalKey
+            export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
+            export ARM_TENANT_ID=$tenantId
+            terraform apply 
+          workingDirectory: infra/terraform/vm
+
+    - ${{ if eq(parameters.barewindowsVM, true) }}:    
+      - task: AzureCLI@2
+        displayName: Provide Bare VM
+        inputs:
+          azureSubscription: '${{parameters.SubscriptionName}}'
+          addSpnToEnvironment: true
+          failOnStandardError: true
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            export ARM_CLIENT_ID=$servicePrincipalId
+            export ARM_CLIENT_SECRET=$servicePrincipalKey
+            export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
+            export ARM_TENANT_ID=$tenantId
+            terraform apply 
+          workingDirectory: infra/terraform/bareVM

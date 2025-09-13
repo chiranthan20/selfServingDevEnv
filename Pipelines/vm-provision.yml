@@ -1,0 +1,28 @@
+trigger:
+  - none
+
+pool:
+  vmImage: ubuntu-latest
+
+parameters:
+  - name: abcproduct
+    displayName: Run The abcproduct Stage
+    type: boolean
+    default: False
+  - name: barewindowsVM
+    displayName: Check if you need a BareVM
+    type: boolean
+    default: False
+
+
+  - stage: abcproduct
+    displayName: abcproduct
+    dependsOn: []
+    condition: ${{ parameters.abcproduct }}
+    jobs:
+      - template: vm-job-template.yml
+        parameters:
+          SubscriptionName: '<service_connection>'
+          Backend: 'abcproduct'
+          DryRun: ${{ parameters.DryRun }}
+          barewindowsVM: ${{ parameters.barewindowsVM }}
