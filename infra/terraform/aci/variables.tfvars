@@ -1,0 +1,5 @@
+resource_group_name  = "aci-dev-rg"
+container_group_name = "my-aci-group"
+container_name       = "myapp"
+image                = "nginx:latest"
+dns_name_label       = "myapp-demo"

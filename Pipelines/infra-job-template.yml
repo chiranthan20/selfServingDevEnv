@@ -57,12 +57,12 @@ jobs:
             export ARM_CLIENT_SECRET=$servicePrincipalKey
             export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
             export ARM_TENANT_ID=$tenantId
-            terraform apply 
+            terraform apply -auto-approve
           workingDirectory: infra/terraform/vm
 
     - ${{ if eq(parameters.barewindowsVM, true) }}:   
       - task: AzureCLI@2
-        displayName: Provide Bare VM
+        displayName: Provision Bare VM
         inputs:
           azureSubscription: '${{parameters.SubscriptionName}}'
           addSpnToEnvironment: true
@@ -74,8 +74,22 @@ jobs:
             export ARM_CLIENT_SECRET=$servicePrincipalKey
             export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
             export ARM_TENANT_ID=$tenantId
-            terraform apply 
+            terraform apply -auto-approve
           workingDirectory: infra/terraform/bareVM
 
     - ${{ if ne(parameters.appName, '') }}:
-      - task: 
+      - task: AzureCLI@2
+        displayName: Provision ACI
+        inputs:
+          azureSubscription: '${{parameters.SubscriptionName}}'
+          addSpnToEnvironment: true
+          failOnStandardError: true
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            export ARM_CLIENT_ID=$servicePrincipalId
+            export ARM_CLIENT_SECRET=$servicePrincipalKey
+            export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
+            export ARM_TENANT_ID=$tenantId
+            terraform apply -auto-approve -var="container_name=${{ parameters.appName }}" -var="image=myregistry.azurecr.io/${{ parameters.appName }}" -var="dns_name_label=${{ parameters.appName }}"
+          workingDirectory: infra/terraform/aci

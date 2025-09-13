@@ -12,7 +12,7 @@ provider "azurerm" {
 }
 provider "azurerm" {
   alias           = "gallery_subscription"
-  subscription_id = "d1d6768f-8830-4d25-8594-a68b8df0529d"
+  subscription_id = "<subscription_ID>>"
   features {
     resource_group {
       prevent_deletion_if_contains_resources = true
