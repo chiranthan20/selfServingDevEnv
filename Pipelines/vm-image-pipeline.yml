@@ -62,3 +62,5 @@ stages:
                     packer init ubuntu-base.pkr.hcl
                     packer build -force --var-file=./variables/${{ lower(parameters.ProductName) }}/ubuntu/variables.pkrvars.hcl --parallel-builds=0 ubuntu-base.pkr.hcl
                   workingDirectory: ci/config
+
+                  # Similar tasks for Windows Image as well
