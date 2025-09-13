@@ -8,9 +8,13 @@ parameters:
     type: string
   - name: barewindowsVM
     type: boolean
+  - name: productName
+    type: string
+  - name: appName
+    type: string
 
 jobs:
-  - job: ProvisionVM_${{parameters.Backend}}
+  - job: ProvisionDevInfra
     timeoutInMinutes: 100
     steps:
     - template: ../common/iac-installation-ubuntu.yml@self
@@ -39,7 +43,7 @@ jobs:
             sh ../../ci/validatetf.sh "${{ parameters.Backend }}.tfbackend" "vm" "./${{ parameters.Backend }}/variables.tfvars"
         workingDirectory: infra/terraform
         
-    - ${{ if eq(parameters.DryRun, false) }}:    
+    - ${{ if and(eq(parameters.DryRun, false), ne(parameters.productName, '')) }}:  
       - task: AzureCLI@2
         displayName: Provide Custom VM
         inputs:
@@ -56,7 +60,7 @@ jobs:
             terraform apply 
           workingDirectory: infra/terraform/vm
 
-    - ${{ if eq(parameters.barewindowsVM, true) }}:    
+    - ${{ if eq(parameters.barewindowsVM, true) }}:   
       - task: AzureCLI@2
         displayName: Provide Bare VM
         inputs:
@@ -72,3 +76,6 @@ jobs:
             export ARM_TENANT_ID=$tenantId
             terraform apply 
           workingDirectory: infra/terraform/bareVM
+
+    - ${{ if ne(parameters.appName, '') }}:
+      - task: 
