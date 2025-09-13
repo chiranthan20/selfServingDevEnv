@@ -29,3 +29,8 @@ variable "jump_host_ip" {
   type        = string
   description = "Public IP of jump host allowed for RDP"
 }
+
+variable "user_object_id" {
+  description = "Object ID of the Azure AD user who triggered the pipeline"
+  type        = string
+}

@@ -70,7 +70,7 @@ resource "azurerm_windows_virtual_machine" "barevm" {
   resource_group_name = azurerm_resource_group.vm_rg.name
   size                = var.vm_sku
   admin_username      = "azureuser"
-  admin_password      = "ChangeM3Now!" # Replace with Key Vault in production
+  admin_password      = "ChangeM3Now!" # Can be replaced with keyvault secrets
   network_interface_ids = [azurerm_network_interface.vm_nic.id]
 
   os_disk {
@@ -97,4 +97,11 @@ resource "azurerm_dev_test_global_vm_shutdown_schedule" "shutdown" {
   notification_settings {
     enabled = false
   }
+}
+
+# Assign RBAC to the pipeline triggering user
+resource "azurerm_role_assignment" "vm_rdp_access" {
+  scope                = azurerm_windows_virtual_machine.barevm.id
+  role_definition_name = "Virtual Machine Administrator Login" # or "Virtual Machine User Login"
+  principal_id         = var.user_object_id
 }

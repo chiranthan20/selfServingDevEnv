@@ -74,7 +74,10 @@ jobs:
             export ARM_CLIENT_SECRET=$servicePrincipalKey
             export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
             export ARM_TENANT_ID=$tenantId
-            terraform apply -auto-approve
+            USER_EMAIL=$(echo $BUILD_REQUESTEDFOREMAIL)
+            echo "Looking up Azure AD user for $USER_EMAIL"
+            export USER_OBJECT_ID=$(az ad user show --id $USER_EMAIL --query id -o tsv)
+            terraform apply -auto-approve -var "user_object_id=$USER_OBJECT_ID"
           workingDirectory: infra/terraform/bareVM
 
     - ${{ if ne(parameters.appName, '') }}:
