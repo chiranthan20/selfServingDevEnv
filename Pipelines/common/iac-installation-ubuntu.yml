@@ -1,0 +1,47 @@
+steps:
+- task: Bash@3
+  displayName: Install Latest Terraform on Agent
+  inputs:
+    targetType: inline
+    script: |
+      sudo apt-get update && sudo apt-get install -y jq unzip wget
+      LATEST_TF_VERSION=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | jq -r .tag_name)
+      mkdir terraform && cd terraform
+      wget -O terraform.zip "https://releases.hashicorp.com/terraform/${LATEST_TF_VERSION#v}/terraform_${LATEST_TF_VERSION#v}_linux_amd64.zip"
+      unzip terraform.zip
+      sudo mv terraform /usr/local/bin
+      terraform --version
+
+- task: Bash@3
+  displayName: Install Latest Packer on AGent
+  inputs:
+    targetType: inline
+    script: |
+      LATEST_PACKER_VERSION=$(curl -s https://api.github.com/repos/hashicorp/packer/releases/latest | jq -r .tag_name)
+      wget -O packer.zip "https://releases.hashicorp.com/packer/${LATEST_PACKER_VERSION#v}/packer_${LATEST_PACKER_VERSION#v}_linux_amd64.zip"
+      unzip packer.zip
+      sudo mv packer /usr/local/bin
+      packer --version    
+
+- task: Bash@3
+  displayName: Install Latest Ansible on Agent
+  inputs:
+    targetType: inline
+    script: |
+      sudo apt-get update
+      sudo apt-get install -y software-properties-common
+      sudo add-apt-repository --yes --update ppa:ansible/ansible
+
+      # Install the latest Ansible available in the PPA
+      sudo apt-get install -y ansible python3-winrm python3-requests
+
+      # Install necessary collections
+      ansible-galaxy collection install ansible.windows
+      ansible-galaxy collection install community.windows
+
+      . /opt/pipx/venvs/ansible-core/bin/activate 
+      /opt/pipx/venvs/ansible-core/bin/python -m pip install pywinrm
+      /opt/pipx/venvs/ansible-core/bin/python -m pip install jmespath
+
+      # Confirm installation
+      ansible --version

@@ -1,0 +1,40 @@
+---
+- name: Install Softwares
+  win_chocolatey:
+    name: '{{ item }}'
+    state: present
+  loop:
+  - azurepowershell
+  - zulu11
+  - git
+  - azure-cli
+  - azurestorageemulator
+
+- name: Install nodejs
+  win_chocolatey:
+    name: nodejs
+    version: '16.15.1'
+
+- name: Install Google Chrome
+  win_chocolatey:
+    name: 'googlechrome'
+    state: present
+    ignore_checksums: true
+
+- name: Install dotnet-6.0-sdk
+  win_chocolatey:
+    name: dotnet-6.0-sdk
+    version: '6.0.401'
+
+- name: Install maven
+  win_chocolatey:
+    name: maven
+    version: '3.8.5'
+
+- name: Install Nuget
+  win_shell: |
+    mkdir C:\Nuget
+    Invoke-WebRequest -Uri 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile 'C:\\Nuget\\nuget.exe'
+
+- name: Reboot the VM
+  win_reboot:

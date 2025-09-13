@@ -1,0 +1,64 @@
+trigger:
+  - none
+pool:
+  vmImage: ubuntu-latest
+
+parameters:
+  - name: ProductName
+    displayName: The name of the product you want to build (e.g. Abc, DEF, OPs)
+    type: string
+  - name: Windows
+    displayName: Build Windows Image
+    type: boolean
+  - name: Ubuntu
+    displayName: Build Ubuntu Image
+    type: boolean
+   
+
+stages:
+  - stage: 'ProvideBaseVMImage'
+    displayName: 'Provide Base VM Images'
+    dependsOn: []
+    condition: or(eq('${{parameters.Windows}}', true), eq('${{parameters.Ubuntu}}', true))
+    jobs:
+      - job: 'ProvideBaseVMSSImage'
+        timeoutInMinutes: 150
+        steps:
+          - template: ../common/iac-installation-ubuntu.yml@self
+          - ${{ if eq(parameters.Ubuntu, true) }}:
+              - task: AzureCLI@2
+                displayName: Validate Packer Templates
+                inputs:
+                  azureSubscription: <Service_Connection_Name>
+                  addSpnToEnvironment: true
+                  scriptType: bash
+                  scriptLocation: inlineScript
+                  failOnStandardError: true
+                  inlineScript: |
+                    export ARM_CLIENT_ID=$servicePrincipalId
+                    export ARM_CLIENT_SECRET=$servicePrincipalKey
+                    export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
+                    export ARM_TENANT_ID=$tenantId
+                    export PKR_VAR_product_name="${{ parameters.ProductName }}"
+                    export PKR_VAR_subscription=$(az account list --query "[?isDefault].id | [0]" | xargs)
+                    export PKR_VAR_gallery_image_version="1.$BUILD_BUILDNUMBER"
+                    sh ../ci/validatepkr.sh "config.pkr.hcl" "config" "ubuntu-base.pkr.hcl" "./variables/${{ lower(parameters.ProductName) }}/ubuntu/variables.pkrvars.hcl"
+                  workingDirectory: ci
+              - task: AzureCLI@2
+                displayName: Build Ubuntu VMSS Image
+                inputs:
+                  azureSubscription: 'Deployment-AIRadCompanionDevOps'
+                  addSpnToEnvironment: true
+                  scriptType: bash
+                  scriptLocation: inlineScript
+                  inlineScript: |
+                    export ARM_CLIENT_ID=$servicePrincipalId
+                    export ARM_CLIENT_SECRET=$servicePrincipalKey
+                    export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id | [0]" | xargs)
+                    export ARM_TENANT_ID=$tenantId
+                    export PKR_VAR_subscription=$(az account list --query "[?isDefault].id | [0]" | xargs)
+                    export PKR_VAR_gallery_image_version="1.$BUILD_BUILDNUMBER"
+                    export PKR_VAR_product_name="${{ parameters.ProductName }}"
+                    packer init ubuntu-base.pkr.hcl
+                    packer build -force --var-file=./variables/${{ lower(parameters.ProductName) }}/ubuntu/variables.pkrvars.hcl --parallel-builds=0 ubuntu-base.pkr.hcl
+                  workingDirectory: ci/config

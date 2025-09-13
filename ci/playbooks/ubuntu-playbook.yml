@@ -1,0 +1,10 @@
+---
+- hosts: all
+  tasks:
+   - name: Set the Agent Custom Capability
+     become: true
+     args:
+      chdir: /etc/profile.d
+     shell: sudo echo "export RELEASE_VERSION={{ image_name }}" > env.sh
+   - include_role:
+       name: '{{ image_name }}'
