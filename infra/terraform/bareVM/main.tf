@@ -16,7 +16,7 @@ resource "azurerm_subnet" "subnet" {
   name                 = "default-subnet"
   resource_group_name  = azurerm_resource_group.vm_rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["192.168.10.0/24"]
+  address_prefixes     = var.subnet_iprange
 }
 
 # NSG with RDP allowed only from Jump Host
@@ -85,6 +85,16 @@ resource "azurerm_windows_virtual_machine" "barevm" {
     sku       = "2019-Datacenter"
     version   = "latest"
   }
+}
+
+# Install Azure AD login extension on the VM
+resource "azurerm_virtual_machine_extension" "aad_login" {
+  name                 = "AADLoginForWindows"
+  virtual_machine_id   = azurerm_windows_virtual_machine.barevm.id
+  publisher            = "Microsoft.Azure.ActiveDirectory"
+  type                 = "AADLoginForWindows"
+  type_handler_version = "1.0"
+  auto_upgrade_minor_version = true
 }
 
 # Auto-shutdown at 6:00 PM

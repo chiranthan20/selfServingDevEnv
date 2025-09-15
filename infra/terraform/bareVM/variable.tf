@@ -16,6 +16,9 @@ variable "vnet_name" {
   type        = string
 }
 
+variable "subnet_iprange" {
+  type = string
+}
 variable "nsg_name" {
   type        = string
 }

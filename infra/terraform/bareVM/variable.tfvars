@@ -3,8 +3,9 @@ vm_resource_group = "barevm-rg"
 location          = "West Europe"
 
 # Networking
-vnet_iprange = "192.168.0.0/16"
+vnet_iprange = "10.1.0.0/16"
 vnet_name    = "barevm-vnet"
+subnet_iprange = "10.1.1.0/24"
 nsg_name     = "barevm-nsg"
 
 # VM Sku

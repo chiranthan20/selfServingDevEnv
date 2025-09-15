@@ -3,7 +3,7 @@ parameters:
     type: string
   - name: 'DryRun'
     type: boolean
-    default: false
+    default: true
   - name: Backend
     type: string
   - name: barewindowsVM
@@ -77,7 +77,16 @@ jobs:
             USER_EMAIL=$(echo $BUILD_REQUESTEDFOREMAIL)
             echo "Looking up Azure AD user for $USER_EMAIL"
             export USER_OBJECT_ID=$(az ad user show --id $USER_EMAIL --query id -o tsv)
-            terraform apply -auto-approve -var "user_object_id=$USER_OBJECT_ID"
+          
+            if [ "${{ parameters.DryRun }}" = "true" ]; then
+                echo "Running terraform plan (DryRun)..."
+                terraform plan -var "user_object_id=$USER_OBJECT_ID"
+            else
+                echo "Running terraform plan + apply..."
+                terraform plan -var "user_object_id=$USER_OBJECT_ID"
+                terraform apply -auto-approve -var "user_object_id=$USER_OBJECT_ID"
+            fi
+
           workingDirectory: infra/terraform/bareVM
 
     - ${{ if ne(parameters.appName, '') }}:

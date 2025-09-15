@@ -20,7 +20,7 @@ parameters:
   - name: DryRun
     displayName: Dry Run Mode
     type: boolean
-    default: false
+    default: true
 
 stages:
   - stage: Provision_Dev_Env
