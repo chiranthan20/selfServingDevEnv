@@ -23,7 +23,8 @@ As mentioned above we have 3 ways of provisioning of Dev Environment. Each has a
 
 <img width="483" height="782" alt="image" src="https://github.com/user-attachments/assets/37a35378-82e6-4d59-a88d-3b2357dc9681" />
 
-DevOps Engineer maintains the config of Custom VM images based on product request. And Developer needs to write Dockerfile if he wants any stateless application, Docker Build Pipeline is enabled with CI so when there is a new change the pipeline runs and creates a new Image in Registry which can later be used inside ACI
+- DevOps Engineer maintains the config of Custom VM images based on product request. And Developer needs to write Dockerfile if he wants any stateless application, Docker Build Pipeline is enabled with CI so when there is a new change the pipeline runs and creates a new Image in Registry which can later be used inside ACI.
+- When a User triggers pipeline by selecting bareWindowsVM option, a VM is created with windows OS and a role "Virtual Machine Administrator Login" is assigned to the person who had triggered the pipeline this maintaining RBAC.
 
 
 
