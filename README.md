@@ -25,6 +25,8 @@ As mentioned above we have 3 ways of provisioning of Dev Environment. Each has a
 
 - When a User triggers pipeline by selecting bareWindowsVM option, a VM is created with windows OS and a role "Virtual Machine Administrator Login" is assigned to the person who had triggered the pipeline.
 - The bare Windows VM is secured within the virtual network. A jump host (terminal server) is deployed in the same VNet and assigned a public IP. Users connect to the jump host via RDP, and from there securely access the bare Windows VM over the internal network.
+- When User selects App Name with tag param and run the pipeline, the flow creates a Azure container instance and deploys the app image with right tag. The container image is a prerequisite which is created and pushed to ACR in a different pipeline. 
+- Similarly if a user needs a VM with customized OS image (Pre installed Softwares), they should select Product Name based on which OS Image would be selected in the flow and a VM would be provisioned with that image. 
 - DevOps Engineer maintains the config of Custom VM images based on product request. And Developer needs to write Dockerfile if he wants any stateless application, Docker Build Pipeline is enabled with CI so when there is a new change the pipeline runs and creates a new Image in Registry which can later be used inside ACI.
 
 
